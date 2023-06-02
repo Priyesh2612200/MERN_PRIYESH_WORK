@@ -1,0 +1,10 @@
+export {productController as productAPI} from '../controllers/POST/postCOntroller'
+export {productgetController as productgetAPI} from '../controllers/POST/getController'
+export {productupdateController as productupdateAPI} from '../controllers/POST/updateController'
+export {productdeleteController as productdeleteAPI} from '../controllers/POST/deleteController'
+
+export {userController as userpostAPI} from '../controllers/USER/postUserController'
+export {usergetController as usergetAPI} from '../controllers/USER/getUserController'
+export {alluserController as allusergetAPI} from '../controllers/USER/alluserController'
+export {userupdateController as userUPDATEAPI} from '../controllers/USER/updateUserController'
+export {userdeleteController as userDELETEAPI} from '../controllers/USER/deleteUserController'

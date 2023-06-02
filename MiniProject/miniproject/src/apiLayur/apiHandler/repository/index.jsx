@@ -1,0 +1,1 @@
+export { axiosRepository } from './Axios';

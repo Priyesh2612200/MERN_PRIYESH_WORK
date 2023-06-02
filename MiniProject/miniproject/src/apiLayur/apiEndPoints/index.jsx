@@ -1,0 +1,1 @@
+export { productEndPoints } from './Post';
