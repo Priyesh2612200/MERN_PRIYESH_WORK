@@ -1,0 +1,20 @@
+/* .editable-table {
+    border-collapse: collapse;
+    border: none;
+  } */
+  
+  .editable-table th {
+    border-bottom: 1px solid #000;
+  }
+  
+  /* .editable-table th,
+  .editable-table td {
+    padding: 8px;
+    text-align: left;
+  }
+  
+  .editable-table td:first-child {
+    font-weight: bold;
+  }
+  
+   */
