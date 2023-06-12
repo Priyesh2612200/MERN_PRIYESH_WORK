@@ -2,51 +2,59 @@ import { PrismaClient } from "@prisma/client";
 import { invoiceModel } from "../../Models/interface";
 import { error } from "console";
 
+
 const prisma = new PrismaClient();
+import { ObjectId } from 'mongodb';
 
 class InvoiceRepository {
-  // async create(InvoicesModel: any) {
+  // async createInvoice(InvoicesModelData: any) {
   //   try {
-  //     console.log("DESC:", InvoicesModel);
+  //     console.log("DESC:", InvoicesModelData);
   //     let respos = await prisma.invoice_Details.createMany({
-  //       data: InvoicesModel,
+  //       data: InvoicesModelData,
   //     });
   //     return respos;
   //   } catch (error) {
   //     console.log("ERROR");
+  //     throw new Error("Failed to create invoice");
   //   }
   // }
 
-  async create(invoiceModel: any) {
+ 
+  async createInvoice(invoicesModelData: any) {
     try {
-      let respos;
-      const existingInvoiceDetails = await prisma.invoice_Details.findFirst({
+      const month = invoicesModelData.month;
+      console.log("MONTH___", month);
+      console.log("ID----",invoicesModelData)
+      let existingInvoice = await prisma.invoice_Details.findFirst({
         where: {
-          month: invoiceModel.month,
+          month: month,
         },
       });
+  console.log("INVOICE ID___",existingInvoice)
+      if (existingInvoice) {
 
-      if (existingInvoiceDetails) {
-        respos = await prisma.invoice_Details.updateMany({
-          where: {
-            id: existingInvoiceDetails.id,
-
-            month: invoiceModel.month,
-          },
-          data: invoiceModel,
+        let responseInvoice = await prisma.invoice_Details.update({
+          where: { id: existingInvoice.supplierId },
+          data: invoicesModelData,
         });
-      } else {
-        respos = await prisma.invoice_Details.createMany({
-          data: invoiceModel,
+        return responseInvoice;
+      } 
+      else {
+        let responseInvoice = await prisma.invoice_Details.create({
+          data: invoicesModelData,
         });
+        return responseInvoice;
       }
     } catch (error) {
       console.log("ERROR:", error);
-      throw error;
+      throw new Error("Failed to create/update invoice");
     }
   }
 
-  async getInvoiceAllData(month: string) {
+
+  async getInvoiceAllData(month:string) {
+   console.log("MONTH____",month)
     return await prisma.invoice_Details.findMany({
       where: {
         month: month,

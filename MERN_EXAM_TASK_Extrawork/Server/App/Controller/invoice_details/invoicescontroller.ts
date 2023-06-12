@@ -4,18 +4,19 @@ import postInvoicerepositary from "../../Repositary/invoicerepositary/postInvoic
 import { invoiceModel } from "../../Models/interface";
 import { responseModel } from "../../Models/responseModel";
 
+
+
 const postinvoices = async (req: Request, res: Response) => {
-  // console.log("Request: ", req.body.data);
-
-  const postDataArray = req.body.data; 
-  console.log("POST DATA___",postDataArray);
-
   try {
+    const postDataArray = req.body.data;
+
+    console.log("POST DATA___", postDataArray.length);
+    const invoiceData = []
     for (let i = 0; i < postDataArray.length; i++) {
       const postData = postDataArray[i];
-     
-      
-      const invoiceData = {
+
+      console.log("POST DATA_______",postData)
+      const temp = {
         Col1: parseFloat(postData.Col1),
         Col2: parseFloat(postData.Col2),
         Col3: parseFloat(postData.Col3),
@@ -32,31 +33,37 @@ const postinvoices = async (req: Request, res: Response) => {
         VAT: parseFloat(postData.VAT),
         Advance: parseFloat(postData.Advance),
         Balance: parseFloat(postData.Balance),
-        supplierId: String(postData.id),
+        supplierId: String(postData.supplierId),
         month: String(postData.month),
       };
-      
-      const invoiceResponse = await postInvoicerepositary.create(invoiceData);
-      // console.log(`Invoice ${i + 1} saved successfully`);
+      // invoiceData.push(temp)
+      await postInvoicerepositary.createInvoice(temp);
     }
-
+    
     let response: responseModel = {
       status: 201,
       message: "Invoices saved successfully",
       data: null,
       error: null,
     };
+
     res.status(201).json(response);
+
+    
   } catch (e) {
+    console.error("Invoice save failed:", e);
+
     let response: responseModel = {
       status: 400,
       message: "Invoice save failed",
       data: null,
-      error: e as string,
+      error: e instanceof Error ? e.message : "Unknown error",
     };
+
     res.status(400).json(response);
   }
 };
+  
 
 
 
@@ -64,7 +71,9 @@ const postinvoices = async (req: Request, res: Response) => {
 const getinvoices = async (req: Request, res: Response) => {
   try {
     const { month } = req.query;
+    console.log("month",month)
     const InvoiceResponse = await postInvoicerepositary.getInvoiceAllData(month ? String(month) : "");
+    console.log("InvoiceResponse--",InvoiceResponse)
     let response: responseModel = {
       status: 201,
       message: "Invoice Details Get save successfully",
@@ -85,11 +94,16 @@ const getinvoices = async (req: Request, res: Response) => {
 
 
 const updateinvoices = async (req: Request, res: Response) => {
-  const UpdatepostDataArray = req.body.data; 
-
-  // console.log("111111111111",UpdatepostDataArray)
+ 
+ 
   try {
+    const UpdatepostDataArray = req.body.data; 
+
+    console.log("UpdatepostDataArray______",UpdatepostDataArray)
+    
+
     for (let i = 0; i < UpdatepostDataArray.length; i++) {
+
       const updateData = UpdatepostDataArray[i];
      
       
@@ -127,23 +141,7 @@ const updateinvoices = async (req: Request, res: Response) => {
     };
     res.status(201).json(response);
 
-    // if (!updatedinvoice) {
-    //   let response: responseModel = {
-    //     status: 404,
-    //     message: "Invoice not found",
-    //     data: null,
-    //     error: null,
-    //   };
-    //   res.status(404).json(response);
-    // } else {
-    //   let response: responseModel = {
-    //     status: 200,
-    //     message: "Invoice updated successfully",
-    //     data: { InvoiveDetails: updatedinvoice },
-    //     error: null,
-    //   };
-    //   res.status(200).json(response);
-    // }
+
   } catch (e) {
     let response: responseModel = {
       status: 500,

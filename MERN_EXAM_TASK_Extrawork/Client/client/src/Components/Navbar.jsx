@@ -26,14 +26,36 @@ const Navbar = () => {
     }
   };
 
-
   
   const [rowData, setRowData] = useState([]);
 
+const [updateData, updatesetRowData] = useState([]);
   const onCellValueChanged = (params) => {
     const vatRate = 0.2;
-
-    const finalnet =
+    console.log("params?.data:",params?.data)
+    console.log("month: ", month);
+    const temp =  {
+      Col1: Number(params?.data["Col1"]) || 0,
+      Col2: Number(params?.data["Col2"]) || 0,
+      Col3: Number(params?.data["Col3"]) || 0,
+      Col4: Number(params?.data["Col4"]) || 0,
+      Col5: Number(params?.data["Col5"]) || 0,
+      Col6: Number(params?.data["Col6"]) || 0,
+      Col7: Number(params?.data["Col7"]) || 0,
+      Col8: Number(params?.data["Col8"]) || 0,
+      Col9: Number(params?.data["Col9"]) || 0,
+      Col10: Number(params?.data["Col10"]) || 0,
+      Col11: Number(params?.data["Col11"]) || 0,
+      Col12: Number(params?.data["Col12"]) || 0,
+      Net: 0,
+      VAT: 0,
+      Advance: 0,
+      Balance: 0, 
+      supplierId: params?.data.id || "",
+      month: month
+    };
+    updateData.push(temp)
+    const finalnet = 
       Number(params?.data["Col1"]) +
       Number(params?.data["Col2"]) +
       Number(params?.data["Col3"]) +
@@ -49,25 +71,38 @@ const Navbar = () => {
 
     const advance = Number(params?.data["Advance"]) || 0;
 
-    const vatAmount = Number( finalnet) * Number( vatRate);
-    const netWithVAT = Number( vatAmount);
-    const balance = Number( netWithVAT) - Number( advance);
+    const vatAmount = Number(finalnet) * Number(vatRate);
+    const netWithVAT = Number(vatAmount);
+    const balance = Number(netWithVAT) - Number(advance);
+    console.log("finalnet: ", finalnet);
 
-    setRowData((prev) => {
+    updatesetRowData((prev) => {
+      // console.log("PREV: ", prev);
+      // const final = prev.map((item) => {
+      //   console.log("item.id: ", item.id);
+      //   console.log("params.data.id: ", params?.data?.id);
+      //   if (item?.id === params?.data?.id) {
+      //     return { ...item, Net: finalnet, VAT: netWithVAT, Balance: balance };
+      //   } else {
+      //     return item;
+      //   }
+      // });
+
+      // console.log("UPDATED ROW DATA: ", final);
+      // return final;
       console.log("PREV: ", prev);
+    const updatedRowData = updateData.map((item) => {
+      console.log("item.id: ", item.supplierId);
+      console.log("params.data.id: ", params?.data?.id);
+      if (item?.supplierId === params?.data?.id) {
+        return { ...item, Net: finalnet, VAT: netWithVAT, Balance: balance, supplierId: item.supplierId, month: month };
+      }
+      return item;
+    });
 
-      const final = prev.map((item) => {
-        if (item?.id === params?.data?.id) {
-          return { ...item, Net: finalnet, VAT: netWithVAT, Balance: balance };
-        } else {
-          return item;
-        }
-      });
-
-
-
-      console.log("UPDATED ROW DATA: ", final);
-      return final;
+    console.log("UPDATED ROW DATA: ", updatedRowData);
+    return updatedRowData;
+    
     });
   };
 
@@ -197,16 +232,17 @@ const Navbar = () => {
     },
 
     {
-      // headerName: 'Select',
+      field: "checkbox",
       headerCheckboxSelection: true,
       checkboxSelection: true,
       width: 50,
+      onCellValueChanged,
     },
   ]);
 
   // useEff
 
-  const onGridReady = (params) => {
+  const onGridReady = () => {
     console.log("AgGrid is Ready");
 
     fetch("http://localhost:4000/authroutes/supplier")
@@ -215,17 +251,18 @@ const Navbar = () => {
         console.log(resp);
 
         if (Array.isArray(resp.data)) {
-          const rowData = resp.data.map((item) => {
+           const rowData = resp.data.map((item) => {
+           
             console.log("ITEM LOG", item);
             return {
               name: item.name,
               Col1: Number(item.Col1) || 0,
-              Col2:Number( item.Col2) || 0,
-              Col3: Number(item.Col3 )|| 0,
+              Col2: Number(item.Col2) || 0,
+              Col3: Number(item.Col3) || 0,
               Col4: Number(item.Col4) || 0,
-              Col5:Number( item.Col5 )|| 0,
+              Col5: Number(item.Col5) || 0,
               Col6: Number(item.Col6) || 0,
-              Col7: Number(item.Col7 )|| 0,
+              Col7: Number(item.Col7) || 0,
               Col8: Number(item.Col8) || 0,
               Col9: Number(item.Col9) || 0,
               Col10: Number(item.Col10) || 0,
@@ -238,12 +275,10 @@ const Navbar = () => {
               ...item,
             };
           });
-       
- 
-
 
           console.log("ROW DATA_", rowData);
-          setRowData(rowData);
+           setRowData(rowData);
+   
         }
       })
       .catch((error) => {
@@ -264,10 +299,10 @@ const Navbar = () => {
     setMonth(selectedMonth);
     setLastDate(`${year}-${month}-${lastDay}`);
 
-     // Call the API only if a month is selected
-  if (selectedMonth) {
-    getUserDetails(selectedMonth);
-  }
+    // Call the API only if a month is selected
+    if (selectedMonth) {
+      getUserDetails(selectedMonth);
+    }
   };
 
   const handleLogout = () => {
@@ -285,110 +320,88 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   //get Invoive_Details
-  const [userData, setUserData] = useState({});
+
   const getUserDetails = (month) => {
     axios
       .get(`http://localhost:4000/authroutes/getinvoicedetails?month=${month}`)
       .then((response) => {
-console.log("RESPONSE___",response)
-       const newresponse= response?.data?.data?.map((item)=>{
-          return { 
-                name:String(item?.supplier?.name),
-                Col1: Number(item.Col1) || 0,
-                Col2:Number( item.Col2) || 0,
-                Col3: Number(item.Col3 )|| 0,
-                Col4: Number(item.Col4) || 0,
-                Col5:Number( item.Col5 )|| 0,
-                Col6: Number(item.Col6) || 0,
-                Col7: Number(item.Col7 )|| 0,
-                Col8: Number(item.Col8) || 0,
-                Col9: Number(item.Col9) || 0,
-                Col10: Number(item.Col10) || 0,
-                Col11: Number(item.Col11) || 0,
-                Col12: Number(item.Col12) || 0,
-                Net: Number(item.Net) || 0,
-                VAT: Number(item.VAT) || 0,
-                Advance: Number(item.advance) || 0,
-                Balance: Number(item.Balance) || 0,
-               
-  
-          }
-        })
-         console.log("NEW REP",newresponse)
-        setRowData(newresponse);
+        console.log("RESPONSE___", response);
+
+        if (response?.data?.data && response.data.data.length > 0) {
+          const newResponse = response.data.data.map((item) => {
+            return {
+              name: String(item?.supplier?.name),
+              Col1: parseInt(item.Col1) || 0,
+              Col2: parseInt(item.Col2) || 0,
+              Col3: parseInt(item.Col3) || 0,
+              Col4: parseInt(item.Col4) || 0,
+              Col5: parseInt(item.Col5) || 0,
+              Col6: parseInt(item.Col6) || 0,
+              Col7: parseInt(item.Col7) || 0,
+              Col8: parseInt(item.Col8) || 0,
+              Col9: parseInt(item.Col9) || 0,
+              Col10: parseInt(item.Col10) || 0,
+              Col11: parseInt(item.Col11) || 0,
+              Col12: parseInt(item.Col12) || 0,
+              Net: parseInt(item.Net) || 0,
+              VAT: parseInt(item.VAT) || 0,
+              Advance: parseInt(item.advance) || 0,
+              Balance: parseInt(item.Balance) || 0,
+              id: String(item.supplierId),
+            };
+          });
+
+          console.log("NEW REP", newResponse);
+          setRowData(newResponse);
+          
+        } else {
+          onGridReady();
+        }
       })
       .catch((error) => {
         console.error(error);
       });
   };
- console.log("INVOICE DATA___",userData);
 
-// Save and Update Invoices 
-//  const saveData = () => {
-//   console.log("__", rowData, month);
-//   const filteredData = rowData.map((item) => {
-//     return { ...item, month };
-//   });
-//   console.log('__filter', filteredData);
 
-//   // Get the user details first to check if data already exists
-//   getUserDetails(month)
-//     .then((userData) => {
-//       const userExists = userData.length > 0;
 
-//       if (userExists) {
-//         // User data exists, update it
-//         const userId = userData[0].id; // Assuming you have an 'id' property for user data
-//         axios
-//           .put(`http://localhost:4000/authroutes/updateinvoicedetails/${userId}`, {
-//             data: filteredData,
-//           })
-//           .then((response) => {
-//             console.log("Data updated successfully!");
-//           })
-//           .catch((error) => {
-//             console.error("Error updating data:", error);
-//           });
-//       } else {
-//         // User data doesn't exist, post new data
-//         axios
-//           .post("http://localhost:4000/authroutes/postinvoicedetails", {
-//             data: filteredData,
-//           })
-//           .then((response) => {
-//             console.log("Data saved successfully!");
-//           })
-//           .catch((error) => {
-//             console.error("Error saving data:", error);
-//           });
-//       }
-//     })
-//     .catch((error) => {
-//       console.error("Error getting user details:", error);
-//     });
-// };
-
- 
   //Save data
-  
-  
+
   const saveData = () => {
-    console.log("__", rowData, month);
-    const filteredData = rowData?.map((item) => {
-      return { ...item, month };
+    console.log("__", updateData, month);
+    const filteredData = updateData?.map((item) => {
+      return {
+        month,
+        Col1: parseFloat(item.Col1),
+        Col2: parseFloat(item.Col2),
+        Col3: parseFloat(item.Col3),
+        Col4: parseFloat(item.Col4),
+        Col5: parseFloat(item.Col5),
+        Col6: parseFloat(item.Col6),
+        Col7: parseFloat(item.Col7),
+        Col8: parseFloat(item.Col8),
+        Col9: parseFloat(item.Col9),
+        Col10: parseFloat(item.Col10),
+        Col11: parseFloat(item.Col11),
+        Col12: parseFloat(item.Col12),
+        Net: parseFloat(item.Net),
+        VAT: parseFloat(item.VAT),
+        Advance: parseFloat(item.Advance),
+        Balance: parseFloat(item.Balance),
+        supplierId: String(item.supplierId),
+      };
     });
-    console.log('__filter',filteredData);
-
-    const finaldata = filteredData.map((item)=>{
-
-    })
+    console.log("__filter", filteredData);
 
     axios
       .post("http://localhost:4000/authroutes/postinvoicedetails", {
         data: filteredData,
       })
       .then((response) => {
-       getUserDetails(month); // Call getUserDetails() with the desired month
+        getUserDetails(month); // Call getUserDetails() with the desired month
+        updatesetRowData([]);
+        // updateData//empty erray
+
         console.log("Data saved successfully!");
       })
       .catch((error) => {
@@ -398,8 +411,7 @@ console.log("RESPONSE___",response)
 
   useEffect(() => {
     getUserDetails(month);
-  }, [month])
-  
+  }, [month]);
 
   return (
     <>
@@ -503,9 +515,11 @@ console.log("RESPONSE___",response)
         >
           <AgGridReact
             rowData={rowData}
+            // updateData={updateData}
             onGridReady={onGridReady}
             columnDefs={columnDefs}
             onCellValueChanged={onCellValueChanged}
+            rowSelection="multipul"
           ></AgGridReact>
         </div>
 
