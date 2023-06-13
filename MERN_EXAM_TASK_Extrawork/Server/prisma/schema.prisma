@@ -46,6 +46,7 @@ model Invoice_Details {
   supplier   Supplier @relation(fields: [supplierId], references: [id])
   supplierId String   @db.ObjectId
   month String
+  status Boolean
 }
 
 model Header {

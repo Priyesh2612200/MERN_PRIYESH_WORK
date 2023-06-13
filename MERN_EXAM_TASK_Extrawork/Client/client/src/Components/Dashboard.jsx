@@ -14,8 +14,12 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import Logo from "../Source/GillyLogo.png";
 import "../Style/tableStyle.css";
 import axios from "axios";
+import jsPDF from "jspdf";
+import Swal from "sweetalert2";
+import autoTable from "jspdf-autotable";
+import { green } from "@mui/material/colors";
 
-const Navbar = () => {
+const Dashboard = () => {
   const formatCurrency = (params) => {
     const value = Number(params.value);
 
@@ -26,36 +30,51 @@ const Navbar = () => {
     }
   };
 
-  
   const [rowData, setRowData] = useState([]);
 
-const [updateData, updatesetRowData] = useState([]);
+  const [updateData, updatesetRowData] = useState([]);
+
+  //On Value Change
   const onCellValueChanged = (params) => {
+    console.log("params---", params);
     const vatRate = 0.2;
-    console.log("params?.data:",params?.data)
+    console.log("params?.data:", params?.data);
     console.log("month: ", month);
-    const temp =  {
-      Col1: Number(params?.data["Col1"]) || 0,
-      Col2: Number(params?.data["Col2"]) || 0,
-      Col3: Number(params?.data["Col3"]) || 0,
-      Col4: Number(params?.data["Col4"]) || 0,
-      Col5: Number(params?.data["Col5"]) || 0,
-      Col6: Number(params?.data["Col6"]) || 0,
-      Col7: Number(params?.data["Col7"]) || 0,
-      Col8: Number(params?.data["Col8"]) || 0,
-      Col9: Number(params?.data["Col9"]) || 0,
-      Col10: Number(params?.data["Col10"]) || 0,
-      Col11: Number(params?.data["Col11"]) || 0,
-      Col12: Number(params?.data["Col12"]) || 0,
-      Net: 0,
-      VAT: 0,
-      Advance: 0,
-      Balance: 0, 
-      supplierId: params?.data.id || "",
-      month: month
-    };
-    updateData.push(temp)
-    const finalnet = 
+    // const temp = {
+    //   Col1: Number(params?.data["Col1"]) || 0,
+    //   Col2: Number(params?.data["Col2"]) || 0,
+    //   Col3: Number(params?.data["Col3"]) || 0,
+    //   Col4: Number(params?.data["Col4"]) || 0,
+    //   Col5: Number(params?.data["Col5"]) || 0,
+    //   Col6: Number(params?.data["Col6"]) || 0,
+    //   Col7: Number(params?.data["Col7"]) || 0,
+    //   Col8: Number(params?.data["Col8"]) || 0,
+    //   Col9: Number(params?.data["Col9"]) || 0,
+    //   Col10: Number(params?.data["Col10"]) || 0,
+    //   Col11: Number(params?.data["Col11"]) || 0,
+    //   Col12: Number(params?.data["Col12"]) || 0,
+    //   Net: 0,
+    //   VAT: 0,
+    //   Advance: 0,
+    //   Balance: 0,
+    //   supplierId: params?.data.id || "",
+    //   month: month,
+    //   status: false
+    // };  
+
+    if (updateData.length > 0) {
+      console.log("IF");
+      let index = updateData.findIndex((x) => x.id === params?.data?.id);
+      if (index >= 0) {
+        updateData[index] = params.data;
+      } else {
+        updateData.push(params?.data);
+      }
+    } else {
+      updateData.push(params?.data);
+    }
+
+    const finalnet =
       Number(params?.data["Col1"]) +
       Number(params?.data["Col2"]) +
       Number(params?.data["Col3"]) +
@@ -76,33 +95,44 @@ const [updateData, updatesetRowData] = useState([]);
     const balance = Number(netWithVAT) - Number(advance);
     console.log("finalnet: ", finalnet);
 
-    updatesetRowData((prev) => {
-      // console.log("PREV: ", prev);
-      // const final = prev.map((item) => {
-      //   console.log("item.id: ", item.id);
-      //   console.log("params.data.id: ", params?.data?.id);
-      //   if (item?.id === params?.data?.id) {
-      //     return { ...item, Net: finalnet, VAT: netWithVAT, Balance: balance };
-      //   } else {
-      //     return item;
-      //   }
-      // });
-
-      // console.log("UPDATED ROW DATA: ", final);
-      // return final;
-      console.log("PREV: ", prev);
-    const updatedRowData = updateData.map((item) => {
-      console.log("item.id: ", item.supplierId);
-      console.log("params.data.id: ", params?.data?.id);
-      if (item?.supplierId === params?.data?.id) {
-        return { ...item, Net: finalnet, VAT: netWithVAT, Balance: balance, supplierId: item.supplierId, month: month };
-      }
-      return item;
+    setRowData((prev) => {
+      const updatedRowData = prev.map((item) => {
+        console.log("item.id: ", item.id);
+        console.log("params.data.id: ", params?.data?.id);
+        if (item?.id === params?.data?.id) {
+          return {
+            ...item,
+            Net: finalnet,
+            VAT: netWithVAT,
+            Balance: balance,
+            supplierId: item.supplierId,
+            month: month,
+          };
+        }
+        return item;
+      });
+      return updatedRowData;
     });
 
-    console.log("UPDATED ROW DATA: ", updatedRowData);
-    return updatedRowData;
-    
+    updatesetRowData(() => {
+      const updatedRowData = updateData.map((item) => {
+        console.log("item.id: ", item.id);
+        console.log("params.data.id: ", params?.data?.id);
+        if (item?.id === params?.data?.id) {
+          return {
+            ...item,
+            Net: finalnet,
+            VAT: netWithVAT,
+            Balance: balance,
+            supplierId: item.id,
+            month: month,
+          };
+        }
+        return item;
+      });
+
+      console.log("UPDATED ROW DATA: ", updatedRowData);
+      return updatedRowData;
     });
   };
 
@@ -115,91 +145,91 @@ const [updateData, updatesetRowData] = useState([]);
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col2",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col3",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col4",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col5",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col6",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col7",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col8",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col9",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col10",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col11",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Col12",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
 
     {
       field: "Net",
       width: 80,
       // valueGetter: () => net,
-      onCellValueChanged,
+      //onCellValueChanged,
       valueFormatter: formatCurrency,
     },
 
@@ -208,14 +238,14 @@ const [updateData, updatesetRowData] = useState([]);
       width: 80,
       // valueGetter: calculateVAT,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Advance",
       editable: true,
       width: 80,
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
     {
       field: "Balance",
@@ -225,22 +255,24 @@ const [updateData, updatesetRowData] = useState([]);
         const net = params?.data?.Net || 0;
         const advance = params?.data?.Advance || 0;
         const balance = net + vatRate * net - advance;
+
         return balance;
       },
       valueFormatter: formatCurrency,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
 
     {
       field: "checkbox",
       headerCheckboxSelection: true,
       checkboxSelection: true,
+      rowMultiSelectWithClick: true,
       width: 50,
-      onCellValueChanged,
+      //onCellValueChanged,
     },
   ]);
 
-  // useEff
+//On Grid Ready
 
   const onGridReady = () => {
     console.log("AgGrid is Ready");
@@ -251,9 +283,8 @@ const [updateData, updatesetRowData] = useState([]);
         console.log(resp);
 
         if (Array.isArray(resp.data)) {
-           const rowData = resp.data.map((item) => {
-           
-            console.log("ITEM LOG", item);
+          const rowData = resp.data.map((item) => {
+            // console.log("ITEM LOG", item);
             return {
               name: item.name,
               Col1: Number(item.Col1) || 0,
@@ -277,8 +308,7 @@ const [updateData, updatesetRowData] = useState([]);
           });
 
           console.log("ROW DATA_", rowData);
-           setRowData(rowData);
-   
+          setRowData(rowData);
         }
       })
       .catch((error) => {
@@ -298,6 +328,9 @@ const [updateData, updatesetRowData] = useState([]);
 
     setMonth(selectedMonth);
     setLastDate(`${year}-${month}-${lastDay}`);
+
+    //month and data dynamic chnage
+  
 
     // Call the API only if a month is selected
     if (selectedMonth) {
@@ -348,12 +381,45 @@ const [updateData, updatesetRowData] = useState([]);
               Advance: parseInt(item.advance) || 0,
               Balance: parseInt(item.Balance) || 0,
               id: String(item.supplierId),
+              status: Boolean(item.status)
             };
           });
 
           console.log("NEW REP", newResponse);
-          setRowData(newResponse);
-          
+
+          setRowData((prev) => {
+            const updatedRowData = prev.map((item) => {
+              for (let i = 0; i < newResponse.length; i++) {
+                if (item?.id === newResponse[i].id) {
+                  const temp = newResponse[i];
+                  return {
+                    name: String(temp.name),
+                    Col1: parseFloat(temp.Col1) || 0,
+                    Col2: parseFloat(temp.Col2) || 0,
+                    Col3: parseFloat(temp.Col3) || 0,
+                    Col4: parseFloat(temp.Col4) || 0,
+                    Col5: parseFloat(temp.Col5) || 0,
+                    Col6: parseFloat(temp.Col6) || 0,
+                    Col7: parseFloat(temp.Col7) || 0,
+                    Col8: parseFloat(temp.Col8) || 0,
+                    Col9: parseFloat(temp.Col9) || 0,
+                    Col10: parseFloat(temp.Col10) || 0,
+                    Col11: parseFloat(temp.Col11) || 0,
+                    Col12: parseFloat(temp.Col12) || 0,
+                    Net: parseFloat(temp.Net) || 0,
+                    VAT: parseFloat(temp.VAT) || 0,
+                    Advance: parseFloat(temp.advance) || 0,
+                    Balance: parseFloat(temp.Balance) || 0,
+                    id: String(temp.id),
+                    status: temp.status
+                  };
+                }
+              }
+              return item;
+            });
+            console.log("UPDATED DATA",updatedRowData)
+            return updatedRowData;
+          });
         } else {
           onGridReady();
         }
@@ -363,12 +429,15 @@ const [updateData, updatesetRowData] = useState([]);
       });
   };
 
-
-
   //Save data
 
   const saveData = () => {
     console.log("__", updateData, month);
+
+    if (updateData.length == 0) {
+      return;
+    }
+
     const filteredData = updateData?.map((item) => {
       return {
         month,
@@ -389,6 +458,7 @@ const [updateData, updatesetRowData] = useState([]);
         Advance: parseFloat(item.Advance),
         Balance: parseFloat(item.Balance),
         supplierId: String(item.supplierId),
+        status: item.status
       };
     });
     console.log("__filter", filteredData);
@@ -399,9 +469,7 @@ const [updateData, updatesetRowData] = useState([]);
       })
       .then((response) => {
         getUserDetails(month); // Call getUserDetails() with the desired month
-        updatesetRowData([]);
-        // updateData//empty erray
-
+        updatesetRowData([]); //empty erray
         console.log("Data saved successfully!");
       })
       .catch((error) => {
@@ -412,6 +480,131 @@ const [updateData, updatesetRowData] = useState([]);
   useEffect(() => {
     getUserDetails(month);
   }, [month]);
+
+  const [invoiveSelectData, setInvoiveSelectData] = useState([]);
+  //On Row Select
+  const handleRowSelected = (event) => {
+    const selectedRows = event.api.getSelectedRows();
+    setInvoiveSelectData(selectedRows)
+    console.log("selectedRows", selectedRows);
+  };
+
+  //On Submit Email Button
+  const handleSendEmail = async () => {
+    try {
+      await axios.post("http://localhost:4000/authroutes/send-email", {
+        data: invoiveSelectData,
+      });
+      console.log("Email sent successfully");
+    } catch (error) {
+      console.error("Failed to send email:", error);
+    }
+  };
+
+  //PDF
+  const handleCombineAndDownload = () => {
+    if (invoiveSelectData.length <= 0) {
+      Swal.fire(
+        "No rows selected",
+        "Please select at least one row to download.",
+        "warning"
+      );
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.setTextColor("#008080");
+    doc.text("Invoice Month: " + month, 10, 10);
+
+    const tableHeaders = ["Invoice Description", "Amount(GBP)"];
+
+    invoiveSelectData.forEach((row, index) => {
+      if (index > 0) {
+        doc.addPage();
+      }
+
+      const supplierName = row.name;
+      doc.setFontSize(14);
+      doc.setTextColor("#800080");
+      doc.text("Name: " + supplierName, 10, 20);
+
+      const tableData = [
+        ["Col1", row.Col1],
+        ["Col2", row.Col2],
+        ["Col3", row.Col3],
+        ["Col4", row.Col4],
+        ["Col5", row.Col5],
+        ["Col6", row.Col6],
+        ["Col7", row.Col7],
+        ["Col8", row.Col8],
+        ["Col9", row.Col9],
+        ["Col10", row.Col10],
+        ["Col11", row.Col11],
+        ["Col12", row.Col12],
+        ["Net", row.Net],
+        ["VAT", row.VAT],
+        ["Advance", row.Advance],
+        ["Balance", row.Balance],
+      ];
+
+      const options = {
+        theme: "striped",
+        headStyles: {
+          fillColor: "#008080",
+          textColor: "#ffffff",
+        },
+        bodyStyles: {
+          textColor: "#333333",
+        },
+        alternateRowStyles: {
+          fillColor: "#f5f5f5",
+        },
+        startY: 40,
+      };
+
+      doc.autoTable({
+        head: [tableHeaders],
+        body: tableData,
+        ...options,
+      });
+    });
+
+    doc.save("InvoiceDetails.pdf");
+  };
+
+ // Approve Invoice
+const approveInvoice = () => {  
+  invoiveSelectData.forEach((row) => {
+    row.status = true;
+    console.log("invoiveSelectData for Approve",invoiveSelectData)
+  });
+
+  updatesetRowData(() => {
+    const updatedRowData = invoiveSelectData.map((item) => {
+      item =  {
+        ...item,
+        supplierId: item.id,
+        month: month,
+      };
+      return item;
+    });
+
+    console.log("UPDATED ROW DATA: ", updatedRowData);
+    return updatedRowData;
+  });
+  saveData();
+};
+
+//color chnage
+const gridOptions = {
+  getRowStyle: (params) => ({
+    background: params.data.status ? "#CEFCBA" : "",
+ }),
+}
+
+  
 
   return (
     <>
@@ -484,10 +677,12 @@ const [updateData, updatesetRowData] = useState([]);
                 Invoice Reference:
               </label>
               <input
-                type="month"
-                className="form-control"
-                id="monthInput"
-                name="monthInput"
+                 type="month"
+            className="form-control"
+            id="secondMonthInput"
+            name="secondMonthInput"
+
+            readOnly
               />
             </div>
           </div>
@@ -496,13 +691,23 @@ const [updateData, updatesetRowData] = useState([]);
         <div className="row mt-3">
           <div className="col-lg-6"></div>
           <div className="col-lg-6">
-            <button type="button" className="btn btn-primary mx-3">
+            <button
+              type="button"
+              className="btn btn-primary mx-3"
+              onClick={handleSendEmail}
+            >
               Email Invoices
             </button>
-            <button type="button" className="btn btn-primary mx-3">
+            <button type="button" className="btn btn-primary mx-3"
+            onClick={approveInvoice}>
+
               Approve Invoices
             </button>
-            <button type="button" className="btn btn-primary mx-3">
+            <button
+              type="button"
+              className="btn btn-primary mx-3"
+              onClick={handleCombineAndDownload}
+            >
               Combine and Download
             </button>
           </div>
@@ -515,11 +720,12 @@ const [updateData, updatesetRowData] = useState([]);
         >
           <AgGridReact
             rowData={rowData}
-            // updateData={updateData}
             onGridReady={onGridReady}
             columnDefs={columnDefs}
             onCellValueChanged={onCellValueChanged}
-            rowSelection="multipul"
+            rowSelection="multiple"
+            onRowSelected={handleRowSelected}
+            gridOptions={gridOptions}
           ></AgGridReact>
         </div>
 
@@ -531,4 +737,4 @@ const [updateData, updatesetRowData] = useState([]);
   );
 };
 
-export default Navbar;
+export default Dashboard;

@@ -3,6 +3,7 @@ import postInvoicerepositary from "../../Repositary/invoicerepositary/postInvoic
 
 import { invoiceModel } from "../../Models/interface";
 import { responseModel } from "../../Models/responseModel";
+import nodemailer from 'nodemailer';
 
 
 
@@ -10,12 +11,10 @@ const postinvoices = async (req: Request, res: Response) => {
   try {
     const postDataArray = req.body.data;
 
-    console.log("POST DATA___", postDataArray.length);
     const invoiceData = []
     for (let i = 0; i < postDataArray.length; i++) {
       const postData = postDataArray[i];
 
-      console.log("POST DATA_______",postData)
       const temp = {
         Col1: parseFloat(postData.Col1),
         Col2: parseFloat(postData.Col2),
@@ -35,7 +34,9 @@ const postinvoices = async (req: Request, res: Response) => {
         Balance: parseFloat(postData.Balance),
         supplierId: String(postData.supplierId),
         month: String(postData.month),
+        status :Boolean(postData.status)
       };
+      console.log("TEMP_____",temp)
       // invoiceData.push(temp)
       await postInvoicerepositary.createInvoice(temp);
     }
@@ -70,13 +71,13 @@ const postinvoices = async (req: Request, res: Response) => {
 
 const getinvoices = async (req: Request, res: Response) => {
   try {
-    const { month } = req.query;
+    const {month} =  req.query;
     console.log("month",month)
-    const InvoiceResponse = await postInvoicerepositary.getInvoiceAllData(month ? String(month) : "");
+    const InvoiceResponse = await postInvoicerepositary.getInvoiceAllData(month? String(month) : "");
     console.log("InvoiceResponse--",InvoiceResponse)
     let response: responseModel = {
       status: 201,
-      message: "Invoice Details Get save successfully",
+      message: "Invoice Details Get successfully",
       data: InvoiceResponse,
       error: null,
     };
@@ -153,8 +154,42 @@ const updateinvoices = async (req: Request, res: Response) => {
   }
 };
 
+
+
+const sendEmail = async (req: Request, res: Response) => {
+  const { data } = req.body;
+  console.log('Selected Rows Data:', data);
+
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'priyeshpoptani1611@gmail.com',
+      pass: 'bejwvowrcimqfzpv'
+    }
+  });
+  
+  var mailOptions = {
+    from: 'priyeshpoptani1611@gmail.com',
+    to: 'p3poptani@gmail.com',
+    subject: 'Invoice Details',
+    text: JSON.stringify(data),
+  };
+  
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+    res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    res.status(500).json({ message: 'Failed to send email' });
+  }
+
+};
+
+
 export default {
   postinvoices,
   getinvoices,
-  updateinvoices
+  updateinvoices,
+  sendEmail
 };

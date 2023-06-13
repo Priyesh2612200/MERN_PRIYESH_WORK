@@ -20,4 +20,6 @@ router.get('/authroutes/supplier',suppliercontroller.getsupplier);
 router.post('/authroutes/postinvoicedetails',invoicescontroller.postinvoices)
 router.get('/authroutes/getinvoicedetails',invoicescontroller.getinvoices)
 router.put('/authroutes/updateinvoicedetails',invoicescontroller.updateinvoices)
+
+router.post('/authroutes/send-email',invoicescontroller.sendEmail)
 export default router;

@@ -3,7 +3,7 @@ import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from './Components/LoginPage';
 import RegistrationPage from './Components/Registration';
-import Navbar from './Components/Navbar';
+import Dashboard from './Components/Dashboard';
 import Protected from './Components/ProtectedRoutes';
 import UserProfile from './Components/UserProfile';
 import UserProfilepageget from './Components/UserProfileGet';
@@ -16,7 +16,7 @@ function App() {
         <Route
             exact
             path="/navbar"
-            element={<Protected Component={Navbar} />}
+            element={<Protected Component={Dashboard} />}
           ></Route>
         <Route
             exact

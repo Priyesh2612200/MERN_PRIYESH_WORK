@@ -25,17 +25,18 @@ class InvoiceRepository {
     try {
       const month = invoicesModelData.month;
       console.log("MONTH___", month);
-      console.log("ID----",invoicesModelData)
       let existingInvoice = await prisma.invoice_Details.findFirst({
         where: {
           month: month,
+          supplierId:invoicesModelData.supplierId
         },
       });
-  console.log("INVOICE ID___",existingInvoice)
+  console.log("existingInvoice",existingInvoice)
       if (existingInvoice) {
-
+        console.log("existingInvoice.id___",existingInvoice.id)
         let responseInvoice = await prisma.invoice_Details.update({
-          where: { id: existingInvoice.supplierId },
+          where: { id: existingInvoice.id,
+         },
           data: invoicesModelData,
         });
         return responseInvoice;
@@ -44,6 +45,7 @@ class InvoiceRepository {
         let responseInvoice = await prisma.invoice_Details.create({
           data: invoicesModelData,
         });
+        console.log("invoicesModelData",invoicesModelData)
         return responseInvoice;
       }
     } catch (error) {
