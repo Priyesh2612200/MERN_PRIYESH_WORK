@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DB_CONN_STRING")
+}
+
+model FormData{
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  email String
+  text String
+  password String
+  radio String
+  checkbox Boolean
+  color String
+  date String
+  number Int
+  range Int
+  time String
+  file String
+}
