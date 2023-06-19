@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+
+}
+datasource db {
+  provider = "mongodb"
+  url      = env("DB_CONN_STRING")
+}
+
+model HRList {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  hrtype String
+  email  String @unique
+
+  empid String @db.ObjectId
+  empliyeelist Employeelist @relation(fields: [empid], references: [id])
+
+}
+
+model Employeelist {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  age Int
+  email  String @unique
+  address String
+  emptype String
+
+  hrlists HRList[]
+
+  managerId String @db.ObjectId
+  managerlist ManagerList  @relation(fields: [managerId],references: [id])
+
+
+}
+
+model ManagerList{
+   id     String @id @default(auto()) @map("_id") @db.ObjectId
+   name String
+   email String
+   city String
+   managerrole String
+   salary Int
+
+
+  seniorempid String[] @db.ObjectId
+  senioremplist SeniorEmpList[] @relation(fields: [seniorempid],references: [id])
+
+   
+  employeelist Employeelist[]
+
+   
+
+}
+
+model SeniorEmpList{
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  name String 
+  email String
+  city String
+  senioremprole String
+
+  managerid String[] @db.ObjectId
+  managerlist ManagerList[] @relation(fields: [managerid],references: [id])
+
+  
+
+  salary Int
+} 

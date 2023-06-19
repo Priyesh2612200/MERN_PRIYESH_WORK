@@ -99,19 +99,21 @@ const Formvalue = () => {
     time: Yup.string().required("Time is required"),
   });
 
-  const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  //Loading
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    //setFieldValue(file);
-    setLoading(true);
-    // Simulating file upload delay
-    setTimeout(() => {
-      console.log("Selected file:", file);
-      setLoading(false);
-    }, 2000); // Replace with your file upload logic
-  };
+  // const [loading, setLoading] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState(null);
+
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   setFieldValue(file);
+  //   setLoading(true);
+  //   // Simulating file upload delay
+  //   setTimeout(() => {
+  //     console.log("Selected file:", file);
+  //     setLoading(false);
+  //   }, 2000); // Replace with your file upload logic
+  // };
 
   return (
     <div
@@ -308,27 +310,27 @@ const Formvalue = () => {
                         />
                       </Grid>
 
-                      {/* <Grid item xs={12}>
-              <input
-                id="file"
-                type="file"
-                accept="image/*, application/pdf, video/*"
-                onChange={(event) => {
-                  const file = event.target.files[0];
-                  setFieldValue("file", file);
+                      <Grid item xs={12}>
+                        <input
+                          id="file"
+                          type="file"
+                          accept="image/*, application/pdf, video/*"
+                          onChange={(event) => {
+                            const file = event.target.files[0];
+                            setFieldValue("file", file);
 
-                  console.log("Selected file:", file);
-                }}
-                style={{ display: "none" }}
-              />
-              <label htmlFor="file">
-                <Button variant="contained" component="span">
-                  Upload File
-                </Button>
-              </label>
-            </Grid> */}
+                            console.log("Selected file:", file);
+                          }}
+                          style={{ display: "none" }}
+                        />
+                        <label htmlFor="file">
+                          <Button variant="contained" component="span">
+                            Upload File
+                          </Button>
+                        </label>
+                      </Grid>
 
-                      <Grid
+                      {/* <Grid
                         item
                         xs={12}
                         container
@@ -352,14 +354,13 @@ const Formvalue = () => {
                               <CircularProgress size={24} /> // Displaying loader while uploading
                             ) : (
                               "Upload File"
-                              
                             )}
                           </Button>
                         </label>
                         {selectedFile && (
                           <p>Selected File: {selectedFile.name}</p>
                         )}
-                      </Grid>
+                      </Grid> */}
 
                       <Grid item xs={12}>
                         <Button
