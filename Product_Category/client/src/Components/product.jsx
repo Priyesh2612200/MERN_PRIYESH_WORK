@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { productPostApiData } from "../redux/Actions/productPostAction";
 import { useDispatch } from "react-redux";
 import axios from "axios";
+
 const ProductForm = () => {
   const navigate = useNavigate();
   const handleBack = () => {
@@ -23,16 +24,16 @@ const ProductForm = () => {
   };
 
   const [loading, setLoading] = useState(false);
-
+  const [categories, setCategories] = useState([]);
   const dispatch = useDispatch();
 
   const validationSchema = Yup.object().shape({
     file: Yup.mixed().required("Image is required"),
     title: Yup.string().required("Title is required"),
     description: Yup.string().required("Description is required"),
-    category: Yup.string()
-      .oneOf(["Car", "Bike"], "Invalid category")
-      .required("Category is required"),
+    categoryId: Yup.string()
+    .oneOf(categories.map((category) => category.id), "Invalid category")
+    .required("Category is required"),
   });
 
   const formik = useFormik({
@@ -40,7 +41,7 @@ const ProductForm = () => {
       file: "",
       title: "",
       description: "",
-      category: "",
+      categoryId: "",
     },
     validationSchema,
     onSubmit: (values) => {
@@ -52,33 +53,24 @@ const ProductForm = () => {
       console.log("Form Data:", values);
 
       dispatch(productPostApiData(formData));
-      
 
       formik.resetForm(); // Reset form fields
     },
-
-    // onSubmit: (values) => {
-    //     let formData = new FormData();
-    //     Object.keys(values).forEach((key) => {
-    //       formData.append(key, values[key]);
-    //     });
-
-    //     console.log('Form Data:', values);
-
-    //     axios
-    //       .post('http://localhost:5000/product', formData)
-    //       .then((response) => {
-    //         console.log('Post request successful:', response.data);
-    //         // Dispatch action if needed
-    //         // dispatch(productPostApiData(formData));
-    //       })
-    //       .catch((error) => {
-    //         console.error('Error making post request:', error);
-    //       });
-
-    //     formik.resetForm(); // Reset form fields
-    //   },
   });
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/allcategory");
+        setCategories(response.data.data);
+        console.log("RESPONSE DATA___",response)
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleImageUpload = (event) => {
     formik.setFieldValue("file", event.target.files[0]);
@@ -164,8 +156,8 @@ const ProductForm = () => {
           <Grid item xs={12}>
             <InputLabel>Select Category</InputLabel>
             <Select
-              name="category"
-              value={formik.values.category}
+              name="categoryId"
+              value={formik.values.categoryId}
               onChange={formik.handleChange}
               variant="outlined"
               fullWidth
@@ -173,11 +165,14 @@ const ProductForm = () => {
               disabled={formik.isSubmitting}
             >
               <MenuItem value="">Select Category</MenuItem>
-              <MenuItem value="Car">Car</MenuItem>
-              <MenuItem value="Bike">Bike</MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
             </Select>
-            {formik.errors.category && formik.touched.category && (
-              <p style={{ color: "red" }}>{formik.errors.category}</p>
+            {formik.errors.categoryId && formik.touched.categoryId && (
+              <p style={{ color: "red" }}>{formik.errors.categoryId}</p>
             )}
           </Grid>
           <Grid item xs={12}>
@@ -201,3 +196,4 @@ const ProductForm = () => {
 };
 
 export default ProductForm;
+

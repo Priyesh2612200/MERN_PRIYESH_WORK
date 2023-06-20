@@ -19,6 +19,10 @@ const upload = multer({ storage: storage });
 const router = Router();
 router.post('/product', upload.single('file'),  validatecheck, productController.productSave);
 
-router.get('allcategory',allCategoryController.getAllCategory)
+router.get('/allcategory',allCategoryController.getAllCategory)
+
+router.get('/filltercategory',productController.getFillterData)
+
+router.delete('/deleteProduct/:id',productController.deleteFillterData);
 
 export default router;

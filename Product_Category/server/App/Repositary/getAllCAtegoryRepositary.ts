@@ -1,14 +1,15 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 class allCategoryRepository {
-    async getCatagory() {
-
-        return await prisma.category.findMany({
-           
-
-        })
-    }
+  async getCatagory() {
+    return await prisma.category.findMany({
+        select:{
+            id:true,
+            name:true
+        }
+    });
+  }
 }
 
-export default new allCategoryRepository;
+export default new allCategoryRepository();

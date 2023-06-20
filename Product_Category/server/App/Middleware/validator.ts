@@ -2,7 +2,7 @@ export function validatecheck(req: any, res: any, next: any) {
     const {
         title,
         description,
-        category,
+        categoryId,
        
     } = req.body;
   
@@ -22,7 +22,7 @@ export function validatecheck(req: any, res: any, next: any) {
       });
     }
 
-    if (!category) {
+    if (!categoryId) {
       return res.status(400).json({
         error: "Category field is required",
       });

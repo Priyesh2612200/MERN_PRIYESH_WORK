@@ -3,6 +3,8 @@ import bodyParser from 'body-parser';
 import routes from '../App/Routes'
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
+import path from 'path';
+
 
 const prisma = new PrismaClient();
 
@@ -26,6 +28,8 @@ class Server {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(cors());
+        this.app.use('/uplodes',express.static('uplodes'))
+
     }
 
     setupRoutes(){
