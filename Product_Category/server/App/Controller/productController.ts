@@ -43,6 +43,8 @@ const getFillterData = async (req: Request, res: Response) => {
     const sort = req.query.sort as string
     const sortFieldName = req.query.sortFieldName as string
     const pageNumber = Number(req.query.pageNumber);
+    const category =  String (req.query.category) 
+
 
     console.log("REQ QUERY",req.query)
     console.log("SEARCH VALUE__",search)
@@ -51,7 +53,7 @@ const getFillterData = async (req: Request, res: Response) => {
     console.log("pageNumber VALUE__", pageNumber);
 
   try {
-      const userResponse = await productRepositary.getsortdata(search,sort,sortFieldName,pageNumber)     
+      const userResponse = await productRepositary.getsortdata(search,sort,sortFieldName,pageNumber,category)     
       let response : responseModel = {
           status: 201,
           message: "Products Get successfully",

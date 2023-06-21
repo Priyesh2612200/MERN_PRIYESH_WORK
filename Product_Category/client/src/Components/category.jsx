@@ -355,8 +355,9 @@ const Category = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("AllCategory");
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortType, setSortType] = useState("asc");
+  const [sort, setSortType] = useState("asc");
 
 
 
@@ -368,14 +369,17 @@ const Category = () => {
   useEffect(() => {
     fetchData();
   }, [currentPage, selectedCategory]);
+  
 
   const fetchData = async () => {
     try {
       const response = await axios.get("http://localhost:5000/filltercategory", {
         params: {
           page: currentPage,
-          category: selectedCategory === "AllCategory" ? "" : selectedCategory,
           search: searchQuery,
+          sort: sort,
+          sortFieldName: "title",
+          category: selectedCategory // Send selected category to the backend
         },
       });
       setData(response.data.data);
@@ -384,14 +388,18 @@ const Category = () => {
       console.log("Error fetching data:", error);
     }
   };
+
+  
 
   const handleSearchChange = async () => {
     try {
       const response = await axios.get("http://localhost:5000/filltercategory", {
         params: {
           page: currentPage,
-          category: selectedCategory === "AllCategory" ? "" : selectedCategory,
           search: searchQuery,
+          sortFieldName: "title", // Provide the desired sort field name here
+          sort: sort, // Set the desired sort type (asc or desc)
+          category: selectedCategory
         },
       });
       setData(response.data.data);
@@ -400,17 +408,18 @@ const Category = () => {
       console.log("Error fetching data:", error);
     }
   };
+  
 
   const handleSortChange = async () => {
-    const newSortType = sortType === "asc" ? "desc" : "asc";
+    const newSortType = sort === "asc" ? "desc" : "asc";
     try {
       const response = await axios.get("http://localhost:5000/filltercategory", {
         params: {
           page: currentPage,
-          category: selectedCategory === "AllCategory" ? "" : selectedCategory,
           search: searchQuery,
           sortFieldName: "title", // Provide the desired sort field name here
-          sortType:newSortType, // Set the desired sort type (asc or desc)
+          sort:newSortType, // Set the desired sort type (asc or desc)
+          category: selectedCategory
         },
       });
       setData(response.data.data);
@@ -425,27 +434,27 @@ const Category = () => {
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setCurrentPage();
+    setCurrentPage(); // Reset the current page to fetch the first page of data
   };
+  
 
   const handleCheckboxChange = (event, productId) => {
     const isChecked = event.target.checked;
     if (isChecked) {
-      setSelectedItems((prevSelectedItems) => [
-        ...prevSelectedItems,
-        productId,
-      ]);
+      setSelectedItems([productId]); // Replace the selectedItems array with a new array containing only the current productId
     } else {
-      setSelectedItems((prevSelectedItems) =>
-        prevSelectedItems.filter((item) => item !== productId)
-      );
+      setSelectedItems([]); // Clear the selectedItems array
     }
   };
+  
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/products/${productId}`);
-      fetchData();
+      for (const productId of selectedItems) {
+        await axios.delete(`http://localhost:5000/products/${productId}`);
+      }
+      setSelectedItems([]); // Clear the selectedItems array after deletion
+      fetchData(); // Fetch the updated data
     } catch (error) {
       console.log("Error deleting product:", error);
     }
@@ -518,7 +527,7 @@ const Category = () => {
 
   return (
     <Container>
-      <Button onClick={handleBack}>Back</Button>
+      
       <div>
         <TextField
           label="Search"
@@ -529,13 +538,15 @@ const Category = () => {
           <Search />
         </IconButton>
         <Select
-  value={selectedCategory}
-  onChange={(event) => handleCategoryChange(event.target.value)}
->
-  <MenuItem value="AllCategory">All Categories</MenuItem>
-  <MenuItem value="car">Car</MenuItem>
-  <MenuItem value="bike">Bike</MenuItem>
-</Select>
+          value={selectedCategory}
+          onChange={(event) => handleCategoryChange(event.target.value)}
+        >
+          <MenuItem value="AllCategory">All Categories</MenuItem>
+          <MenuItem value="car">Car</MenuItem>
+          <MenuItem value="bike">Bike</MenuItem>
+        </Select>
+
+
       </div>
       <TableContainer component={Paper}>
         <Table>
@@ -548,6 +559,7 @@ const Category = () => {
         page={currentPage}
         onChange={handlePageChange}
       />
+      <Button onClick={handleBack}>Back</Button>
     </Container>
   );
 };

@@ -24,7 +24,7 @@ class productRepository {
   }
 
 
-  async getsortdata(key: string, sortType: any, sortFieldName: string,pageNumber: number) {
+  async getsortdata(key: string, sortType: any, sortFieldName: string,pageNumber: number,category: string ) {
     const pageSize = 10; // Number of items per page
     var searchUser: any = [];
     let sort = {}
@@ -47,6 +47,16 @@ class productRepository {
 
     }
     console.log('search: ', search);
+
+    // Add category filtering
+  if (category && category !== "AllCategory") {
+    search = {
+      ...search,
+      categorylist: {
+        name: category,
+      },
+    };
+  }
 
 
     searchUser = await prisma.productData.findMany({
