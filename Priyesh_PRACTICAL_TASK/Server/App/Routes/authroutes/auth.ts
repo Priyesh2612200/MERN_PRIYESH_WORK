@@ -22,4 +22,7 @@ router.get('/authroutes/getinvoicedetails',invoicescontroller.getinvoices)
 router.put('/authroutes/updateinvoicedetails',invoicescontroller.updateinvoices)
 
 router.post('/authroutes/send-email',invoicescontroller.sendEmail)
+
+router.post('/authroutes/getpdfdata',invoicescontroller.detaPdfData)
+
 export default router;

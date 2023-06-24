@@ -60,7 +60,7 @@ const Dashboard = () => {
     //   supplierId: params?.data.id || "",
     //   month: month,
     //   status: false
-    // };  
+    // };
 
     if (updateData.length > 0) {
       console.log("IF");
@@ -273,7 +273,7 @@ const Dashboard = () => {
     },
   ]);
 
-//On Grid Ready
+  //On Grid Ready
 
   const onGridReady = () => {
     console.log("AgGrid is Ready");
@@ -302,7 +302,7 @@ const Dashboard = () => {
               Col12: Number(item.Col12) || 0,
               Net: Number(item.Net) || 0,
               VAT: Number(item.VAT) || 0,
-              Advance: Number(item.advance) || 0,
+              Advance: Number(item.Advance) || 0,
               Balance: Number(item.Balance) || 0,
               ...item,
             };
@@ -331,7 +331,6 @@ const Dashboard = () => {
     setLastDate(`${year}-${month}-${lastDay}`);
 
     //month and data dynamic chnage
-  
 
     // Call the API only if a month is selected
     if (selectedMonth) {
@@ -360,7 +359,7 @@ const Dashboard = () => {
       .get(`http://localhost:4000/authroutes/getinvoicedetails?month=${month}`)
       .then((response) => {
         console.log("RESPONSE___", response);
-
+        console.log("Advance",response?.data?.data[1]?.Advance)
         if (response?.data?.data && response.data.data.length > 0) {
           const newResponse = response.data.data.map((item) => {
             return {
@@ -379,13 +378,14 @@ const Dashboard = () => {
               Col12: parseInt(item.Col12) || 0,
               Net: parseInt(item.Net) || 0,
               VAT: parseInt(item.VAT) || 0,
-              Advance: parseInt(item.advance) || 0,
+              Advance: parseInt(item.Advance) || 0,
               Balance: parseInt(item.Balance) || 0,
               id: String(item.supplierId),
-              status: Boolean(item.status)
+              status: Boolean(item.status),
             };
           });
 
+        
           console.log("NEW REP", newResponse);
 
           setRowData((prev) => {
@@ -409,16 +409,16 @@ const Dashboard = () => {
                     Col12: parseFloat(temp.Col12) || 0,
                     Net: parseFloat(temp.Net) || 0,
                     VAT: parseFloat(temp.VAT) || 0,
-                    Advance: parseFloat(temp.advance) || 0,
+                    Advance: parseFloat(temp.Advance) || 0,
                     Balance: parseFloat(temp.Balance) || 0,
                     id: String(temp.id),
-                    status: temp.status
+                    status: temp.status,
                   };
                 }
               }
               return item;
             });
-            console.log("UPDATED DATA",updatedRowData)
+            console.log("UPDATED DATA", updatedRowData);
             return updatedRowData;
           });
         } else {
@@ -459,7 +459,7 @@ const Dashboard = () => {
         Advance: parseFloat(item.Advance),
         Balance: parseFloat(item.Balance),
         supplierId: String(item.supplierId),
-        status: item.status
+        status: item.status,
       };
     });
     console.log("__filter", filteredData);
@@ -486,7 +486,7 @@ const Dashboard = () => {
   //On Row Select
   const handleRowSelected = (event) => {
     const selectedRows = event.api.getSelectedRows();
-    setInvoiveSelectData(selectedRows)
+    setInvoiveSelectData(selectedRows);
     console.log("selectedRows", selectedRows);
   };
 
@@ -503,7 +503,79 @@ const Dashboard = () => {
   };
 
   //PDF
-  const handleCombineAndDownload = () => {
+  // const handleCombineAndDownload = () => {
+  //   if (invoiveSelectData.length <= 0) {
+  //     Swal.fire(
+  //       "No rows selected",
+  //       "Please select at least one row to download.",
+  //       "warning"
+  //     );
+  //     return;
+  //   }
+
+  //   const doc = new jsPDF();
+
+  //   doc.setFontSize(16);
+  //   doc.setTextColor("#008080");
+  //   doc.text("Invoice Month: " + month, 10, 10);
+
+  //   const tableHeaders = ["Invoice Description", "Amount(GBP)"];
+
+  //   invoiveSelectData.forEach((row, index) => {
+  //     if (index > 0) {
+  //       doc.addPage();
+  //     }
+
+  //     const supplierName = row.name;
+  //     doc.setFontSize(14);
+  //     doc.setTextColor("#800080");
+  //     doc.text("Name: " + supplierName, 10, 20);
+
+  //     const tableData = [
+  //       ["Col1", row.Col1],
+  //       ["Col2", row.Col2],
+  //       ["Col3", row.Col3],
+  //       ["Col4", row.Col4],
+  //       ["Col5", row.Col5],
+  //       ["Col6", row.Col6],
+  //       ["Col7", row.Col7],
+  //       ["Col8", row.Col8],
+  //       ["Col9", row.Col9],
+  //       ["Col10", row.Col10],
+  //       ["Col11", row.Col11],
+  //       ["Col12", row.Col12],
+  //       ["Net", row.Net],
+  //       ["VAT", row.VAT],
+  //       ["Advance", row.Advance],
+  //       ["Balance", row.Balance],
+  //     ];
+
+  //     const options = {
+  //       theme: "striped",
+  //       headStyles: {
+  //         fillColor: "#008080",
+  //         textColor: "#ffffff",
+  //       },
+  //       bodyStyles: {
+  //         textColor: "#333333",
+  //       },
+  //       alternateRowStyles: {
+  //         fillColor: "#f5f5f5",
+  //       },
+  //       startY: 40,
+  //     };
+
+  //     doc.autoTable({
+  //       head: [tableHeaders],
+  //       body: tableData,
+  //       ...options,
+  //     });
+  //   });
+
+  //   doc.save("InvoiceDetails.pdf");
+  // };
+
+  const handleCombineAndDownload = async () => {
     if (invoiveSelectData.length <= 0) {
       Swal.fire(
         "No rows selected",
@@ -512,100 +584,58 @@ const Dashboard = () => {
       );
       return;
     }
+  
+    try {
+      const response = await axios.post('http://localhost:4000/authroutes/getpdfdata', { data: invoiveSelectData, month: month });
+      console.log("RESPONSE", response);
 
-    const doc = new jsPDF();
+      const linkSource = `data:application/pdf;base64,${response.data}`;
+    const downloadLink = document.createElement("a");
+    const fileName = "InvoiceDetails.pdf";
 
-    doc.setFontSize(16);
-    doc.setTextColor("#008080");
-    doc.text("Invoice Month: " + month, 10, 10);
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.click();
 
-    const tableHeaders = ["Invoice Description", "Amount(GBP)"];
+      // Handle the response from the backend API
+    } catch (error) {
+      console.error('Error:', error.message);
+      // Handle any errors that occurred during the request
+    }
+  };
+  
+  
+  
 
-    invoiveSelectData.forEach((row, index) => {
-      if (index > 0) {
-        doc.addPage();
-      }
-
-      const supplierName = row.name;
-      doc.setFontSize(14);
-      doc.setTextColor("#800080");
-      doc.text("Name: " + supplierName, 10, 20);
-
-      const tableData = [
-        ["Col1", row.Col1],
-        ["Col2", row.Col2],
-        ["Col3", row.Col3],
-        ["Col4", row.Col4],
-        ["Col5", row.Col5],
-        ["Col6", row.Col6],
-        ["Col7", row.Col7],
-        ["Col8", row.Col8],
-        ["Col9", row.Col9],
-        ["Col10", row.Col10],
-        ["Col11", row.Col11],
-        ["Col12", row.Col12],
-        ["Net", row.Net],
-        ["VAT", row.VAT],
-        ["Advance", row.Advance],
-        ["Balance", row.Balance],
-      ];
-
-      const options = {
-        theme: "striped",
-        headStyles: {
-          fillColor: "#008080",
-          textColor: "#ffffff",
-        },
-        bodyStyles: {
-          textColor: "#333333",
-        },
-        alternateRowStyles: {
-          fillColor: "#f5f5f5",
-        },
-        startY: 40,
-      };
-
-      doc.autoTable({
-        head: [tableHeaders],
-        body: tableData,
-        ...options,
-      });
+  // Approve Invoice
+  const approveInvoice = () => {
+    invoiveSelectData.forEach((row) => {
+      row.status = true;
+      console.log("invoiveSelectData for Approve", invoiveSelectData);
     });
 
-    doc.save("InvoiceDetails.pdf");
+    updatesetRowData(() => {
+      const updatedRowData = invoiveSelectData.map((item) => {
+        item = {
+          ...item,
+          supplierId: item.id,
+          month: month,
+        };
+        return item;
+      });
+
+      console.log("UPDATED ROW DATA: ", updatedRowData);
+      return updatedRowData;
+    });
+    saveData();
   };
 
- // Approve Invoice
-const approveInvoice = () => {  
-  invoiveSelectData.forEach((row) => {
-    row.status = true;
-    console.log("invoiveSelectData for Approve",invoiveSelectData)
-  });
-
-  updatesetRowData(() => {
-    const updatedRowData = invoiveSelectData.map((item) => {
-      item =  {
-        ...item,
-        supplierId: item.id,
-        month: month,
-      };
-      return item;
-    });
-
-    console.log("UPDATED ROW DATA: ", updatedRowData);
-    return updatedRowData;
-  });
-  saveData();
-};
-
-//color chnage
-const gridOptions = {
-  getRowStyle: (params) => ({
-    background: params.data.status ? "#CEFCBA" : "",
- }),
-}
-
-  
+  //color chnage
+  const gridOptions = {
+    getRowStyle: (params) => ({
+      background: params.data.status ? "#CEFCBA" : "",
+    }),
+  };
 
   return (
     <>
@@ -678,12 +708,11 @@ const gridOptions = {
                 Invoice Reference:
               </label>
               <input
-                 type="month"
-            className="form-control"
-            id="secondMonthInput"
-            name="secondMonthInput"
-
-            readOnly
+                type="month"
+                className="form-control"
+                id="secondMonthInput"
+                name="secondMonthInput"
+                readOnly
               />
             </div>
           </div>
@@ -699,9 +728,11 @@ const gridOptions = {
             >
               Email Invoices
             </button>
-            <button type="button" className="btn btn-primary mx-3"
-            onClick={approveInvoice}>
-
+            <button
+              type="button"
+              className="btn btn-primary mx-3"
+              onClick={approveInvoice}
+            >
               Approve Invoices
             </button>
             <button
