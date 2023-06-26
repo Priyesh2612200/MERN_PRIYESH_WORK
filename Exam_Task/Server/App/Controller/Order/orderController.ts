@@ -55,7 +55,44 @@ const createOrder = async (req: Request, res: Response) => {
     }
 }
 
+const deleteOrder = async (req: Request, res: Response) => {
+ 
+  try {
+    console.log(req.params)
+
+    const deleteOrder = await orderRepositary.deleteOrder(req.params.id);
+
+    if (deleteOrder) {
+      let response: responseModel = {
+        status: 200,
+        message: "Order deleted successfully",
+        data: null,
+        error: null,
+      };
+      res.status(200).json(response);
+    } else {
+      let response: responseModel = {
+        status: 404,
+        message: "Order not found",
+        data: null,
+        error: null,
+      };
+      res.status(404).json(response);
+    }
+  } catch (e) {
+    console.log("deleteerror",e)
+    let response: responseModel = {
+      status: 500,
+      message: "Order delete failed",
+      data: null,
+      error: e as string,
+    };
+    res.status(500).json(response);
+  }
+};
+
 export default {
     createOrder,
-    getOrder
+    getOrder,
+    deleteOrder
 }

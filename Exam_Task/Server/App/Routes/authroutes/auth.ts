@@ -10,4 +10,5 @@ router.delete('/deleteStock/:id',stockController.deleteStock);
 
 router.post('/createOrder',orderController.createOrder);
 router.get('/getorder',orderController.getOrder);
+router.delete('/deleteOrder/:id',orderController.deleteOrder);
 export default router;

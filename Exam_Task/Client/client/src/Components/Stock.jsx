@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import { Button, Modal, Typography, TextField, Grid } from "@mui/material";
+import { Button, Modal, Typography, TextField,Grid} from "@mui/material";
 import { postStockData } from "../Redux/Actions/postStockAction";
-import { getAllStockApiData } from "../Redux/Actions/getStockAction";
 import axios from "axios";
 import Delete from "@mui/icons-material/Delete";
 import { IconButton } from "@mui/material";
-import { daleteAPIstock } from "../ApiEndPoints.js";
+import { daleteAPIstock } from "../ApiEndPoints.js/index.js";
 import Swal from "sweetalert2";
-
 import { useDispatch } from "react-redux";
+
+
 
 const Stock = () => {
   const dispatch = useDispatch();
@@ -25,22 +25,10 @@ const Stock = () => {
     qty: "",
   });
 
-  const handleDelete = async (id) => {
-    try {
-      await daleteAPIstock(id);
-      // Refresh the data after successful deletion
-      await fetchStockData();
-      Swal.fire("Success", "Data deleted successfully", "success");
-    } catch (error) {
-      console.error("Error deleting data:", error);
-      Swal.fire("Error", "Failed to delete data", "error");
-    }
-  };
-
   const fetchStockData = async () => {
     try {
       const response = await axios.get("http://localhost:4000/getStock");
-      console.log("response",response.data.data)
+      console.log("response", response.data.data);
       setStockData(response.data.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -50,6 +38,29 @@ const Stock = () => {
   useEffect(() => {
     fetchStockData();
   }, []);
+
+  const handleDelete = async (id, orderQty) => {
+    try {
+      await daleteAPIstock(id);
+      // Deduct the orderQty from the stockData
+      const updatedStockData = stockData.map((stock) => {
+        if (stock.id === id) {
+          stock.qty -= orderQty;
+        }
+        return stock;
+      });
+      fetchStockData();
+      setStockData(updatedStockData);
+      Swal.fire("Success", "Data deleted successfully", "success");
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      Swal.fire(
+        "Error",
+        "Cannot delete stock with non-zero order value",
+        "error"
+      );
+    }
+  };
 
   const columns = [
     {
@@ -64,8 +75,14 @@ const Stock = () => {
     },
     {
       name: "Order Qty",
-      selector: "qty",
       sortable: true,
+      cell: (row) => {
+        if (row.orders && row.orders.length > 0) {
+          return row.orders.map((order) => order.orderQty).join(", ");
+        } else {
+          return "-";
+        }
+      },
     },
     {
       name: "Actions",
@@ -73,7 +90,11 @@ const Stock = () => {
       cell: (row) => (
         <div>
           <IconButton>
-            <Delete color="error" onClick={() => handleDelete(row.id)} />
+            <Delete
+              color="error"
+              onClick={() => handleDelete(row.id, row.orderQty)}
+              disabled={row.qty !== 0}
+            />
           </IconButton>
         </div>
       ),
@@ -117,14 +138,23 @@ const Stock = () => {
 
     if (Object.keys(errors).length === 0) {
       try {
-        const res = await dispatch(postStockData(formData));
-        fetchStockData(); // Fetch updated stock data
-        handleCloseModal(); // Close the modal after successful submission
-        setFormErrors({}); // Clear any existing errors
-        setFormData({ name: "", qty: "" }); // Clear the form input values
+        // Check if the stock with the same name already exists
+        const existingStock = stockData.find(
+          (stock) => stock.name === formData.name
+        );
+        if (existingStock) {
+          errors.name = "Stock with the same name already exists";
+          setFormErrors(errors);
+        } else {
+          await dispatch(postStockData(formData));
+          handleCloseModal(); // Close the modal after successful submission
+          setFormErrors({}); // Clear any existing errors
+          setFormData({ name: "", qty: "" }); // Clear the form input values
+          fetchStockData(); // Fetch updated stock data
+        }
       } catch (error) {
         console.error("Stock save failed:", error);
-        setFormErrors({ name: "Stock with the same name already exists" });
+        setFormErrors({ name: "Failed to save stock data" });
       }
     } else {
       setFormErrors(errors);
@@ -133,20 +163,22 @@ const Stock = () => {
 
   return (
     <>
-      <Grid container>
-        <Grid item xs={12} sm={2} lg={2} xl={2}>
-          <div className="menu">
-            <h1>Menu</h1>
-            <ul>
-              <li>
-                <Link to="/">Stock</Link>
-              </li>
-              <li>
-                <Link to="/order">Order</Link>
-              </li>
-            </ul>
-          </div>
-        </Grid>
+      <Grid container p={3}>
+      <Grid item xs={12} sm={2} lg={2} xl={2}>
+      <div>
+        <h1>Menu</h1>
+        <ul>
+          <li>
+            <Link to="/">Stock</Link>
+          </li>
+          <li>
+            <Link to="/order">Order</Link>
+          </li>
+        </ul>
+      </div>
+    </Grid>
+
+
         <Grid item xs={12} sm={10} lg={10} xl={10}>
           <Button variant="contained" onClick={handleOpenModal}>
             Add Stock

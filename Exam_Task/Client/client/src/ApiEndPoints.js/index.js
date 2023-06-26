@@ -5,3 +5,4 @@ export const daleteAPIstock=(id)=>  axios.delete(`http://localhost:4000/deleteSt
 
 export const InsertAPIOrder=(data)=>  axios.post(`http://localhost:4000/createOrder`,data)
 export const getAllorder=()=>  axios.get(`http://localhost:4000/getorder`)
+export const daleteAPIOrder=(id)=>  axios.delete(`http://localhost:4000/deleteOrder/${id}`)

@@ -33,6 +33,14 @@ class OrderRepository {
           }
         )
     }
+
+
+    async deleteOrder(id: string) {
+      const deletedUser = await prisma.order.delete({
+        where: {id},
+      });
+      return deletedUser;
+    }
       
 }
 

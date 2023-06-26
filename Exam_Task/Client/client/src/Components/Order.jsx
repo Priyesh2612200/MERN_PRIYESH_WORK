@@ -12,6 +12,9 @@ import DataTable from "react-data-table-component";
 import axios from "axios";
 import { postOrderData } from "../Redux/Actions/postOrderAction";
 import { useDispatch } from "react-redux";
+import { daleteAPIOrder } from "../ApiEndPoints.js";
+import IconButton from "@mui/material/IconButton";
+import Delete from "@mui/icons-material/Delete";
 
 const Order = () => {
   const dispatch = useDispatch();
@@ -103,58 +106,97 @@ const Order = () => {
     }
 
     if (Object.keys(errors).length === 0) {
-
-      // Find the stock object based on the selected stock name
       const selectedStock = stockOptions.find(
         (stock) => stock.name === formData.stock
       );
       if (selectedStock) {
-        const requestData = {
-          customerName: formData.customerName,
-          orderQty: orderQty,
-          stockId: selectedStock.id,
-          stock: selectedStock,
-        };
+        if (orderQty <= selectedStock.qty) {
+          const requestData = {
+            customerName: formData.customerName,
+            orderQty: orderQty,
+            stockId: selectedStock.id,
+            stock: selectedStock,
+          };
 
-        dispatch(postOrderData(requestData))
-          .then((response) => {
-            handleCloseModal(); // Close the modal after successful submission
-          })
-          .catch((error) => {
-            console.error("API Error:", error);
-            // Handle error cases
-            handleCloseModal(); // Close the modal even if there's an error
-          });
+          dispatch(postOrderData(requestData))
+            .then(() => {
+              // Deduct the order quantity from the selected stock
+              selectedStock.qty -= orderQty;
+              handleCloseModal();
+              fetchOrderData(); // Fetch updated order data
+            })
+            .catch((error) => {
+              console.error("API Error:", error);
+              handleCloseModal();
+            });
+        } else {
+          errors.orderQty = `Order Quantity cannot exceed the available quantity (${selectedStock.qty}) for selected stock`;
+          setFormErrors(errors);
+        }
       } else {
         console.error("Selected stock not found");
-        handleCloseModal(); // Close the modal if the selected stock is not found
+        handleCloseModal();
       }
     } else {
       setFormErrors(errors);
     }
   };
 
+  const handleDelete = async (orderId) => {
+    try {
+      await daleteAPIOrder(orderId);
+      // Find the deleted order in orderData state and retrieve the stockId and orderQty
+      const deletedOrder = orderData.find((order) => order.id === orderId);
+      if (deletedOrder) {
+        const { stockId, orderQty } = deletedOrder;
+        const selectedStock = stockOptions.find(
+          (stock) => stock.id === stockId
+        );
+        if (selectedStock) {
+          // Add the orderQty back to the selected stock
+          const updatedQty = selectedStock.qty + orderQty;
+          selectedStock.qty = updatedQty;
+          setStockOptions([...stockOptions]);
+          fetchOrderData(); // Fetch updated Order data
+        }
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+    }
+  };
+
   const columns = [
     {
       name: "Customer Name",
-      selector: "customerName",
+      selector: (row) => row.customerName,
       sortable: true,
     },
     {
       name: "Order Quantity",
-      selector: "orderQty",
+      selector: (row) => row.orderQty,
       sortable: true,
     },
     {
       name: "Stock",
-    selector: (row) => row.stock.name,
+      selector: (row) => row.stock.name,
       sortable: true,
+    },
+    {
+      name: "Actions",
+      sortable: false,
+      cell: (row) => (
+        <div>
+          <IconButton color="error" onClick={() => handleDelete(row.id)}>
+            <Delete />
+          </IconButton>
+        </div>
+      ),
     },
   ];
 
   return (
     <>
-      <Grid container>
+      <Grid container p={3}>
         <Grid item xs={12} sm={2} lg={2} xl={2}>
           <div className="menu">
             <h1>Menu</h1>
