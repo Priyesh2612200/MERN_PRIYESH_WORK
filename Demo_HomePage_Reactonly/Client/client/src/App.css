@@ -16,47 +16,39 @@ body{
   height: 100%;
 }
 
-.homepage{
-   max-width: 100%;
-   margin-left: 250px;
-   align-items: center;
-}
 .SidebarList{
   height: auto;
   padding: 0%;
   width: 100%;
 }
 
-a .active{
-  background-color:  #00AAAA;;
-}
-.SidebarList .row:hover{
-  cursor: pointer;
-  background-color: #293846;
-}
-.row {
-    --bs-gutter-x: none;
-}
-
-  a .icon{
-    margin-right: 15px;
-    width: 30px;
-  }
- 
-
-
-.SidebarList .row a{
-    
-        text-decoration: none;
-        width: 100%;
+.SidebarList .row{
+  width: 100%;
   height: 60px;
   list-style-type: none;
   margin: 0%;
   display: flex;
   flex-direction: row;
   color: white;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   font-family: Arial, Helvetica, sans-serif;
-  
+}
+
+.SidebarList #active{
+  background-color:  #00AAAA;;
+}
+.SidebarList .row:hover{
+  cursor: pointer;
+  background-color: #293846;
+}
+
+.row #icon{
+  flex: 30%;
+  display: grid;
+  place-items: center;
+}
+
+.row #title{
+  flex: 70%;
 }

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import DataTable from "react-data-table-component";
-import { Button, Modal, Typography, TextField,Grid} from "@mui/material";
+import { Button, Modal, Typography, TextField,Container } from "@mui/material";
 import { postStockData } from "../Redux/Actions/postStockAction";
 import axios from "axios";
 import Delete from "@mui/icons-material/Delete";
@@ -9,8 +8,6 @@ import { IconButton } from "@mui/material";
 import { daleteAPIstock } from "../ApiEndPoints.js/index.js";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
-
-
 
 const Stock = () => {
   const dispatch = useDispatch();
@@ -64,17 +61,17 @@ const Stock = () => {
 
   const columns = [
     {
-      name: "Name",
+      name: <b>Name</b>,
       selector: "name",
       sortable: true,
     },
     {
-      name: "Quantity",
+      name: <b>Quantity</b>,
       selector: "qty",
       sortable: true,
     },
     {
-      name: "Order Qty",
+      name: <b>Order Qty</b> ,
       sortable: true,
       cell: (row) => {
         if (row.orders && row.orders.length > 0) {
@@ -85,7 +82,7 @@ const Stock = () => {
       },
     },
     {
-      name: "Actions",
+      name: <b>Actions</b>,
       sortable: false,
       cell: (row) => (
         <div>
@@ -163,83 +160,72 @@ const Stock = () => {
 
   return (
     <>
-      <Grid container p={3}>
-      <Grid item xs={12} sm={2} lg={2} xl={2}>
-      <div>
-        <h1>Menu</h1>
-        <ul>
-          <li>
-            <Link to="/">Stock</Link>
-          </li>
-          <li>
-            <Link to="/order">Order</Link>
-          </li>
-        </ul>
-      </div>
-    </Grid>
+      <Container maxWidth="lg" style={{marginTop:'20px'}}>
+      
+    
+        <Button style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}} onClick={handleOpenModal}>
+          Add Stock
+        </Button>
 
+     
+      
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+              padding: "24px",
+              minWidth: "300px",
+              maxWidth: "400px",
+              borderRadius: "8px",
+            }}
+          >
+            <Typography variant="h6" style={{ marginBottom: "16px" }}>
+              Add Stock
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                name="name"
+                label="Name"
+                value={formData.name}
+                onChange={handleChange}
+                fullWidth
+                error={!!formErrors.name}
+                helperText={formErrors.name}
+                style={{ marginBottom: "16px" }}
+              />
+              <TextField
+                name="qty"
+                label="Quantity"
+                value={formData.qty}
+                onChange={handleChange}
+                fullWidth
+                error={!!formErrors.qty}
+                helperText={formErrors.qty}
+                style={{ marginBottom: "16px" }}
+              />
+              <Button type="submit" style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}}>
+                Submit
+              </Button>
+            </form>
+          </div>
+        </Modal>
 
-        <Grid item xs={12} sm={10} lg={10} xl={10}>
-          <Button variant="contained" onClick={handleOpenModal}>
-            Add Stock
-          </Button>
-          <Modal open={isModalOpen} onClose={handleCloseModal}>
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "white",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                padding: "24px",
-                minWidth: "300px",
-                maxWidth: "400px",
-                borderRadius: "8px",
-              }}
-            >
-              <Typography variant="h6" style={{ marginBottom: "16px" }}>
-                Add Stock
-              </Typography>
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  name="name"
-                  label="Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!formErrors.name}
-                  helperText={formErrors.name}
-                  style={{ marginBottom: "16px" }}
-                />
-                <TextField
-                  name="qty"
-                  label="Quantity"
-                  value={formData.qty}
-                  onChange={handleChange}
-                  fullWidth
-                  error={!!formErrors.qty}
-                  helperText={formErrors.qty}
-                  style={{ marginBottom: "16px" }}
-                />
-                <Button type="submit" variant="contained">
-                  Submit
-                </Button>
-              </form>
-            </div>
-          </Modal>
+        <DataTable
 
-          <DataTable
-            title="Stock"
-            columns={columns}
-            data={stockData}
-            pagination
-            paginationPerPage={10}
-            highlightOnHover
-            striped
-          />
-        </Grid>
-      </Grid>
+          title={<b>STOCK</b>}
+          columns={columns}
+          data={stockData}
+          pagination
+          paginationPerPage={10}
+          highlightOnHover
+          striped
+        />
+    </Container>
     </>
   );
 };

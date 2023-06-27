@@ -3,10 +3,9 @@ import {
   Modal,
   Typography,
   TextField,
-  Grid,
   MenuItem,
+  Container
 } from "@mui/material";
-import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -167,22 +166,22 @@ const Order = () => {
 
   const columns = [
     {
-      name: "Customer Name",
+      name: <b>Customer Name</b>,
       selector: (row) => row.customerName,
       sortable: true,
     },
     {
-      name: "Order Quantity",
+      name: <b>Order Quantity</b>,
       selector: (row) => row.orderQty,
       sortable: true,
     },
     {
-      name: "Stock",
+      name:  <b>Stock</b>, 
       selector: (row) => row.stock.name,
       sortable: true,
     },
     {
-      name: "Actions",
+      name: <b>Actions</b>,
       sortable: false,
       cell: (row) => (
         <div>
@@ -196,95 +195,80 @@ const Order = () => {
 
   return (
     <>
-      <Grid container p={3}>
-        <Grid item xs={12} sm={2} lg={2} xl={2}>
-          <div className="menu">
-            <h1>Menu</h1>
-            <ul>
-              <li>
-                <Link to="/">Stock</Link>
-              </li>
-              <li>
-                <Link to="/order">Order</Link>
-              </li>
-            </ul>
+     <Container maxWidth="lg" style={{marginTop:'20px'}}>
+        <Button style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}} onClick={handleOpenModal}>
+          Add Order
+        </Button>
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "white",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+              padding: "24px",
+              minWidth: "300px",
+              maxWidth: "500px",
+            }}
+          >
+            <Typography variant="h5">Add Order</Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                name="customerName"
+                label="Customer Name"
+                value={formData.customerName}
+                onChange={handleChange}
+                error={!!formErrors.customerName}
+                helperText={formErrors.customerName}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                name="stock"
+                select
+                label="Stock"
+                value={formData.stock}
+                onChange={handleChange}
+                error={!!formErrors.stock}
+                helperText={formErrors.stock}
+                fullWidth
+                margin="normal"
+              >
+                {stockOptions.map((option) => (
+                  <MenuItem key={option.id} value={option.name}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                name="orderQty"
+                label="Order Quantity"
+                type="number"
+                value={formData.orderQty}
+                onChange={handleChange}
+                error={!!formErrors.orderQty}
+                helperText={formErrors.orderQty}
+                fullWidth
+                margin="normal"
+              />
+              <Button type="submit" style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}}>
+                Submit
+              </Button>
+            </form>
           </div>
-        </Grid>
-        <Grid item xs={12} sm={10} lg={10} xl={10}>
-          <Button variant="contained" onClick={handleOpenModal}>
-            Add Order
-          </Button>
-          <Modal open={isModalOpen} onClose={handleCloseModal}>
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                backgroundColor: "white",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-                padding: "24px",
-                minWidth: "300px",
-                maxWidth: "500px",
-              }}
-            >
-              <Typography variant="h5">Add Order</Typography>
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  name="customerName"
-                  label="Customer Name"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  error={!!formErrors.customerName}
-                  helperText={formErrors.customerName}
-                  fullWidth
-                  margin="normal"
-                />
-                <TextField
-                  name="stock"
-                  select
-                  label="Stock"
-                  value={formData.stock}
-                  onChange={handleChange}
-                  error={!!formErrors.stock}
-                  helperText={formErrors.stock}
-                  fullWidth
-                  margin="normal"
-                >
-                  {stockOptions.map((option) => (
-                    <MenuItem key={option.id} value={option.name}>
-                      {option.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  name="orderQty"
-                  label="Order Quantity"
-                  type="number"
-                  value={formData.orderQty}
-                  onChange={handleChange}
-                  error={!!formErrors.orderQty}
-                  helperText={formErrors.orderQty}
-                  fullWidth
-                  margin="normal"
-                />
-                <Button type="submit" variant="contained">
-                  Submit
-                </Button>
-              </form>
-            </div>
-          </Modal>
-          <DataTable
-            title="Order Data"
-            columns={columns}
-            data={orderData}
-            pagination
-            paginationPerPage={10}
-            highlightOnHover
-            striped
-          />
-        </Grid>
-      </Grid>
+        </Modal>
+        <DataTable
+         title={<b>ORDER DATA</b>}
+          columns={columns}
+          data={orderData}
+          pagination
+          paginationPerPage={10}
+          highlightOnHover
+          striped
+        />
+     </Container>
     </>
   );
 };
