@@ -14,12 +14,18 @@ import { useDispatch } from "react-redux";
 import { daleteAPIOrder } from "../ApiEndPoints.js";
 import IconButton from "@mui/material/IconButton";
 import Delete from "@mui/icons-material/Delete";
+import Swal from "sweetalert2";
+
+import "../App.css";
 
 const Order = () => {
   const dispatch = useDispatch();
 
   const [orderData, setOrderData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     customerName: "",
     stock: "",
@@ -89,7 +95,7 @@ const Order = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let errors = {};
@@ -117,16 +123,23 @@ const Order = () => {
             stock: selectedStock,
           };
 
+          setIsLoading(true); // Set loading state to true
+
           dispatch(postOrderData(requestData))
             .then(() => {
               // Deduct the order quantity from the selected stock
               selectedStock.qty -= orderQty;
               handleCloseModal();
-              fetchOrderData(); // Fetch updated order data
+
+              setTimeout(() => {
+                fetchOrderData(); // Fetch updated order data
+                setIsLoading(false); // Set loading state to false
+              }, 1000);
             })
             .catch((error) => {
               console.error("API Error:", error);
               handleCloseModal();
+              setIsLoading(false); // Set loading state to false
             });
         } else {
           errors.orderQty = `Order Quantity cannot exceed the available quantity (${selectedStock.qty}) for selected stock`;
@@ -142,50 +155,69 @@ const Order = () => {
   };
 
   const handleDelete = async (orderId) => {
-    try {
-      await daleteAPIOrder(orderId);
-      // Find the deleted order in orderData state and retrieve the stockId and orderQty
-      const deletedOrder = orderData.find((order) => order.id === orderId);
-      if (deletedOrder) {
-        const { stockId, orderQty } = deletedOrder;
-        const selectedStock = stockOptions.find(
-          (stock) => stock.id === stockId
-        );
-        if (selectedStock) {
-          // Add the orderQty back to the selected stock
-          const updatedQty = selectedStock.qty + orderQty;
-          selectedStock.qty = updatedQty;
-          setStockOptions([...stockOptions]);
-          fetchOrderData(); // Fetch updated Order data
+    // Show confirmation dialog using SweetAlert
+    Swal.fire({
+      title: 'Confirmation',
+      text: 'Are you sure you want to delete this order?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await daleteAPIOrder(orderId);
+          // Find the deleted order in orderData state and retrieve the stockId and orderQty
+          const deletedOrder = orderData.find((order) => order.id === orderId);
+          if (deletedOrder) {
+            const { stockId, orderQty } = deletedOrder;
+            const selectedStock = stockOptions.find((stock) => stock.id === stockId);
+            if (selectedStock) {
+              // Add the orderQty back to the selected stock
+              const updatedQty = selectedStock.qty + orderQty;
+              selectedStock.qty = updatedQty;
+              setStockOptions([...stockOptions]);
+              Swal.fire("Success", "Data deleted successfully", "success");
+              fetchOrderData(); // Fetch updated Order data
+            }
+          }
+        } catch (error) {
+          console.error("API Error:", error);
+          Swal.fire("Error", "Failed to delete data", "error");
         }
       }
-    } catch (error) {
-      console.error("API Error:", error);
-    }
+    });
   };
+  
 
   const columns = [
     {
-      name: <b>Customer Name</b>,
+      name: <div style={{fontWeight:'bold', fontSize:'20px'}}>Customer Name</div>, 
       selector: (row) => row.customerName,
       sortable: true,
+      style:{ backgroundColor: '#3B9091', fontSize:'16px'},
     },
     {
-      name: <b>Order Quantity</b>,
+      name: <div style={{fontWeight:'bold', fontSize:'20px'}}>Order Quantity</div>,
       selector: (row) => row.orderQty,
       sortable: true,
+      style:{ backgroundColor: '#3B9091', fontSize:'16px'},
     },
     {
-      name:  <b>Stock</b>, 
+      name: <div style={{fontWeight:'bold', fontSize:'20px'}}>Stock</div>,
       selector: (row) => row.stock.name,
       sortable: true,
+      style:{ backgroundColor: '#3B9091', fontSize:'16px'},
     },
     {
-      name: <b>Actions</b>,
+      name: <div style={{fontWeight:'bold', fontSize:'20px'}}>Actions</div>,
       sortable: false,
+      style:{ backgroundColor: '#3B9091', fontSize:'16px'},
       cell: (row) => (
         <div>
-          <IconButton color="error" onClick={() => handleDelete(row.id)}>
+          <IconButton onClick={() => handleDelete(row.id)}>
             <Delete />
           </IconButton>
         </div>
@@ -259,15 +291,22 @@ const Order = () => {
             </form>
           </div>
         </Modal>
-        <DataTable
-         title={<b>ORDER DATA</b>}
-          columns={columns}
-          data={orderData}
-          pagination
-          paginationPerPage={10}
-          highlightOnHover
-          striped
-        />
+
+        {isLoading ? (
+    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+    ) : (
+      <DataTable
+      title={<b>ORDER DATA</b>}
+       columns={columns}
+       data={orderData}
+       pagination
+       paginationPerPage={10}
+       highlightOnHover
+       striped
+     />
+      )}
+
+        
      </Container>
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
-import { Button, Modal, Typography, TextField,Container } from "@mui/material";
+import { Button, Modal, Typography, TextField, Container } from "@mui/material";
 import { postStockData } from "../Redux/Actions/postStockAction";
 import axios from "axios";
 import Delete from "@mui/icons-material/Delete";
@@ -9,10 +9,15 @@ import { daleteAPIstock } from "../ApiEndPoints.js/index.js";
 import Swal from "sweetalert2";
 import { useDispatch } from "react-redux";
 
+import "../App.css";
+
 const Stock = () => {
   const dispatch = useDispatch();
   const [stockData, setStockData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     qty: "",
@@ -58,21 +63,64 @@ const Stock = () => {
       );
     }
   };
+  // const handleDelete = async (id, orderQty) => {
+  //   // Show confirmation dialog using SweetAlert
+  //   Swal.fire({
+  //     title: "Confirmation",
+  //     text: "Are you sure you want to delete this stock?",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#3085d6",
+  //     cancelButtonColor: "#d33",
+  //     confirmButtonText: "Yes, delete it!",
+  //     cancelButtonText: "Cancel",
+  //   }).then(async (result) => {
+  //     if (result.isConfirmed) {
+  //       try {
+  //         await daleteAPIstock(id);
+  //         // Deduct the orderQty from the stockData
+  //         const updatedStockData = stockData.map((stock) => {
+  //           if (stock.id === id) {
+  //             stock.qty -= orderQty;
+  //           }
+  //           return stock;
+  //         });
+  //         fetchStockData();
+  //         setStockData(updatedStockData);
+  //         Swal.fire("Success", "Data deleted successfully", "success");
+  //       } catch (error) {
+  //         console.error("Error deleting data:", error);
+  //         Swal.fire(
+  //           "Error",
+  //           "Cannot delete stock with non-zero order value",
+  //           "error"
+  //         );
+  //       }
+  //     }
+  //   });
+  // };
 
   const columns = [
     {
-      name: <b>Name</b>,
+      name: <div style={{ fontWeight: "bold", fontSize: "20px" }}>Name</div>,
       selector: "name",
       sortable: true,
+      style: { backgroundColor: "#3B9091", fontSize: "16px" },
     },
     {
-      name: <b>Quantity</b>,
+      name: (
+        <div style={{ fontWeight: "bold", fontSize: "20px" }}>Quantity</div>
+      ),
       selector: "qty",
       sortable: true,
+      style: { backgroundColor: "#3B9091", fontSize: "16px" },
     },
     {
-      name: <b>Order Qty</b> ,
+      name: (
+        <div style={{ fontWeight: "bold", fontSize: "20px" }}>Order Qty</div>
+      ),
       sortable: true,
+      style: { backgroundColor: "#3B9091", fontSize: "16px" },
       cell: (row) => {
         if (row.orders && row.orders.length > 0) {
           return row.orders.map((order) => order.orderQty).join(", ");
@@ -82,13 +130,13 @@ const Stock = () => {
       },
     },
     {
-      name: <b>Actions</b>,
+      name: <div style={{ fontWeight: "bold", fontSize: "20px" }}>Actions</div>,
       sortable: false,
+      style: { backgroundColor: "#3B9091", fontSize: "16px" },
       cell: (row) => (
         <div>
           <IconButton>
             <Delete
-              color="error"
               onClick={() => handleDelete(row.id, row.orderQty)}
               disabled={row.qty !== 0}
             />
@@ -135,6 +183,8 @@ const Stock = () => {
 
     if (Object.keys(errors).length === 0) {
       try {
+        setIsLoading(true); // Set loading state to true
+
         // Check if the stock with the same name already exists
         const existingStock = stockData.find(
           (stock) => stock.name === formData.name
@@ -147,7 +197,11 @@ const Stock = () => {
           handleCloseModal(); // Close the modal after successful submission
           setFormErrors({}); // Clear any existing errors
           setFormData({ name: "", qty: "" }); // Clear the form input values
-          fetchStockData(); // Fetch updated stock data
+
+          setTimeout(() => {
+            fetchStockData(); // Fetch updated stock data
+            setIsLoading(false); // Set loading state to false
+          }, 1000);
         }
       } catch (error) {
         console.error("Stock save failed:", error);
@@ -160,15 +214,18 @@ const Stock = () => {
 
   return (
     <>
-      <Container maxWidth="lg" style={{marginTop:'20px'}}>
-      
-    
-        <Button style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}} onClick={handleOpenModal}>
+      <Container maxWidth="lg" style={{ marginTop: "20px" }}>
+        <Button
+          style={{
+            backgroundColor: "#00AAAA",
+            color: "white",
+            fontWeight: "bold",
+          }}
+          onClick={handleOpenModal}
+        >
           Add Stock
         </Button>
 
-     
-      
         <Modal open={isModalOpen} onClose={handleCloseModal}>
           <div
             style={{
@@ -208,24 +265,39 @@ const Stock = () => {
                 helperText={formErrors.qty}
                 style={{ marginBottom: "16px" }}
               />
-              <Button type="submit" style={{backgroundColor:'#00AAAA', color:'white', fontWeight:'bold'}}>
+              <Button
+                type="submit"
+                style={{
+                  backgroundColor: "#00AAAA",
+                  color: "white",
+                  fontWeight: "bold",
+                }}
+              >
                 Submit
               </Button>
             </form>
           </div>
         </Modal>
 
-        <DataTable
-
-          title={<b>STOCK</b>}
-          columns={columns}
-          data={stockData}
-          pagination
-          paginationPerPage={10}
-          highlightOnHover
-          striped
-        />
-    </Container>
+        {isLoading ? (
+          <div class="lds-ellipsis">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        ) : (
+          <DataTable
+            title={<b>STOCK DATA</b>}
+            columns={columns}
+            data={stockData}
+            pagination
+            paginationPerPage={10}
+            highlightOnHover
+            striped
+          />
+        )}
+      </Container>
     </>
   );
 };

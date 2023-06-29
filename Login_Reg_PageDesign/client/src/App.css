@@ -1,0 +1,28 @@
+body {
+  margin: 0%;
+  padding: 0%;
+}
+
+.login {
+  margin-top: 150px;
+  text-align: center;
+}
+
+.loginimg {
+  width: 100%;
+  height: 90%;
+  margin-top: 50px;
+  justify-content: center;
+}
+
+.Reg {
+  margin-top: 100px;
+  text-align: center;
+}
+
+.Regimg {
+  width: 100%;
+  height: 90%;
+  margin-top: 50px;
+  justify-content: center;
+}

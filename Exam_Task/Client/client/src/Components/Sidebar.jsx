@@ -16,8 +16,7 @@ function Sidebar({ children }) {
               >
                 <NavLink
                   to={val.link}
-                  className="active"
-                  exact
+                  activeClassName="active"
                 >
                 <div  className="icon">{val.icon}</div>
                   <div  className="title">{val.title}</div>  
@@ -29,7 +28,7 @@ function Sidebar({ children }) {
         </ul>
       </div>
 
-      <div className="homepage">{children}</div>
+      <div className="anypage">{children}</div>
     </>
   );
 }
